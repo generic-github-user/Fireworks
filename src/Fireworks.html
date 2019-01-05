@@ -1,0 +1,158 @@
+<html>
+	<head>
+		<title>
+			Fireworks
+		</title>
+	</head>
+<body bgcolor="#000000">
+<canvas id="canvas" width="600" height="600"></canvas>
+<script type="text/javascript">
+	
+	var canvas = document.getElementById("canvas");
+	var ctx = canvas.getContext("2d");
+	
+	ctx.canvas.width = window.innerWidth - 20;
+	ctx.canvas.height = window.innerHeight - 20;
+	
+	var fireworkX = [];
+	var fireworkY = [];
+	var fireworkTimer = [];
+	var fireworkExplodeTime = [];
+	
+	var fireworkParticleX = [];
+	var fireworkParticleY = [];
+	var fireworkParticleVelocityX = [];
+	var fireworkParticleVelocityY = [];
+	var particleColor = 0;
+	var fireworkParticleColor = [];
+	
+	var colorPalette = [[255,0,0],[255,130,0],[255,255,0],[0,255,0],[0,0,255],[150,0,150]];
+	var fireworkSpeed = 6;
+	var particleAmount = 30;
+	var particleMin = 10;
+	var particleSize = 10;
+	var fireworkAmount = 1;
+	var particleVariationX = 4;
+	var particleVariationY = 6;
+	var explodeTimeLimit = 3;
+	
+	function addFirework(){ //Adds a firework
+		fireworkX.push(Math.random()*canvas.width);
+		fireworkY.push(canvas.height);
+		fireworkTimer.push(0);
+		fireworkExplodeTime.push(Math.round(((Math.random()*(canvas.height/explodeTimeLimit))+canvas.height/explodeTimeLimit)/fireworkSpeed));
+	}
+	
+	
+	function drawScreen(){ //Draws fireworks and particles
+				
+		ctx.canvas.width = window.innerWidth - 20;
+		ctx.canvas.height = window.innerHeight - 20;
+		
+		for(i=0;i<fireworkX.length;i++){ //Explodes fireworks
+			if(fireworkTimer[i]==fireworkExplodeTime[i]){
+				
+				particleColor = Math.floor(Math.random()*colorPalette.length);
+				
+				for(j=0;j<Math.random()*particleAmount+particleMin;j++){
+					fireworkParticleX.push(fireworkX[i]);
+					fireworkParticleY.push(fireworkY[i]);
+					
+					fireworkParticleVelocityX.push(Math.random()*particleVariationX*2-particleVariationX);
+					fireworkParticleVelocityY.push(Math.random()*particleVariationY-particleVariationY*2);
+					
+					fireworkParticleColor.push(particleColor)
+				}
+				
+				var audio = new Audio('pop.mp3');
+				audio.play();
+				fireworkX.splice(i,1);
+				fireworkY.splice(i,1);
+				fireworkTimer.splice(i,1);
+				fireworkExplodeTime.splice(i,1);
+			}
+			else{
+				fireworkTimer[i]++;
+			}
+		}
+		
+		{ //Clears canvas
+		
+			ctx.beginPath();
+			ctx.fillStyle = "rgba(0,0,0,1)";
+				
+			ctx.fillRect(0,0,canvas.width,canvas.height);
+			ctx.fill();
+		
+		}
+		
+		for(i=0;i<fireworkX.length;i++){ //Draws fireworks 
+		
+			ctx.beginPath();
+			ctx.fillStyle = "rgba(255,255,0,1)";
+				
+			ctx.arc(fireworkX[i],fireworkY[i],10,0,2 * Math.PI,false);
+			ctx.fill();
+		
+		}
+		
+		for(i=0;i<fireworkParticleX.length;i++){ //Draws firework particles
+		
+			ctx.fillStyle = "rgba("+colorPalette[fireworkParticleColor[i]][0]+","+colorPalette[fireworkParticleColor[i]][1]+","+colorPalette[fireworkParticleColor[i]][2]+",1)";
+			ctx.beginPath();
+				
+			ctx.arc(fireworkParticleX[i],fireworkParticleY[i],particleSize,0,2 * Math.PI,false);
+			ctx.fill();
+		
+		}
+	
+		for(i=0;i<fireworkX.length;i++){ //Calculates firework physics
+			fireworkY[i] -= fireworkSpeed;
+		}
+		
+		for(i=0;i<fireworkParticleX.length;i++){ //Calculates firework particles physics
+			fireworkParticleX[i] += fireworkParticleVelocityX[i];
+			fireworkParticleY[i] += fireworkParticleVelocityY[i];
+			
+			fireworkParticleVelocityY[i] += 0.25;
+		}
+		
+		if(Math.random()*100<fireworkAmount){ //Adds fireworks at random intervals
+			addFirework();
+		}
+
+		for(i=0;i<fireworkParticleX.length;i++){ //Clears old particles
+			if(fireworkParticleY[i]>canvas.height){	
+				fireworkParticleX.splice(i,1);
+				fireworkParticleY.splice(i,1);
+				
+				fireworkParticleVelocityX.splice(i,1);
+				fireworkParticleVelocityY.splice(i,1);
+				
+				fireworkParticleColor.splice(i,1);
+			}
+		}
+		
+		
+	}
+	
+	
+	
+	
+	
+	document.body.onkeyup = function(addFireworkSpace){ //Detects spacebar press
+		if(addFireworkSpace.keyCode == 32){
+			addFirework();
+		}
+	}
+	
+	document.getElementById("canvas").onclick = function addFireworkClick(){ //Detects mouse click
+		addFirework();
+	}
+	
+	setInterval(drawScreen,10);
+
+</script>
+
+</body>
+</html>
